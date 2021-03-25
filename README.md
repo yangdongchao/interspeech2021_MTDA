@@ -42,7 +42,9 @@ python Main/mmd_main.py            # Needs to run on a GPU
 python Main/wgan_main.py            # Needs to run on a GPU
 
 ```
-
+## TO DO list
+I am sorry for these dirty code,  I will add note for these code in future to make you quickly read. <br/>
+I will reorganize these code in future, and make it fully.
 ## Organization of the Repository
 
 ### model
