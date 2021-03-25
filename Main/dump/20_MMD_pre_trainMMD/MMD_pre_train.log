@@ -1,0 +1,240 @@
+[Train][0] Loss: E_pred 1.341
+[Train][0] Acc: source 0.507 (5182.0/10215) target 0.185 (1112.0/3750)
+[Train][1] Loss: E_pred 0.967
+[Train][1] Acc: source 0.633 (6469.0/10215) target 0.210 (1259.0/3750)
+[Train][2] Loss: E_pred 0.780
+[Train][2] Acc: source 0.716 (7313.0/10215) target 0.203 (1216.0/3750)
+[Train][3] Loss: E_pred 0.664
+[Train][3] Acc: source 0.758 (7747.0/10215) target 0.213 (1281.0/3750)
+[Train][4] Loss: E_pred 0.543
+[Train][4] Acc: source 0.803 (8198.0/10215) target 0.221 (1329.0/3750)
+[Train][5] Loss: E_pred 0.430
+[Train][5] Acc: source 0.848 (8663.0/10215) target 0.217 (1303.0/3750)
+[Train][6] Loss: E_pred 0.346
+[Train][6] Acc: source 0.886 (9053.0/10215) target 0.221 (1327.0/3750)
+[Train][7] Loss: E_pred 0.274
+[Train][7] Acc: source 0.909 (9281.0/10215) target 0.235 (1410.0/3750)
+[Train][8] Loss: E_pred 0.232
+[Train][8] Acc: source 0.924 (9434.0/10215) target 0.229 (1377.0/3750)
+[Train][9] Loss: E_pred 0.182
+[Train][9] Acc: source 0.946 (9668.0/10215) target 0.241 (1445.0/3750)
+[Train][0] Loss: E_pred 1.331
+[Train][0] Acc: source 0.505 (5156.0/10215) target 0.187 (1125.0/3750)
+[Train][1] Loss: E_pred 0.942
+[Train][1] Acc: source 0.644 (6583.0/10215) target 0.212 (1275.0/3750)
+[Train][2] Loss: E_pred 0.775
+[Train][2] Acc: source 0.718 (7330.0/10215) target 0.210 (1262.0/3750)
+[Train][3] Loss: E_pred 0.648
+[Train][3] Acc: source 0.757 (7736.0/10215) target 0.212 (1271.0/3750)
+[Train][4] Loss: E_pred 0.530
+[Train][4] Acc: source 0.810 (8278.0/10215) target 0.217 (1302.0/3750)
+[Train][5] Loss: E_pred 0.453
+[Train][5] Acc: source 0.836 (8541.0/10215) target 0.220 (1320.0/3750)
+[Train][6] Loss: E_pred 0.369
+[Train][6] Acc: source 0.870 (8890.0/10215) target 0.226 (1355.0/3750)
+[Train][7] Loss: E_pred 0.298
+[Train][7] Acc: source 0.899 (9180.0/10215) target 0.236 (1419.0/3750)
+[Train][8] Loss: E_pred 0.234
+[Train][8] Acc: source 0.925 (9446.0/10215) target 0.242 (1451.0/3750)
+[Train][9] Loss: E_pred 0.192
+[Train][9] Acc: source 0.941 (9616.0/10215) target 0.237 (1422.0/3750)
+
+Eval MNIST: [0.    0.642 0.473 0.376 0.245 0.255 0.221 0.258 0.224 0.124] src: 0.642 tgt:0.272
+[Train][10] Loss: E_pred 0.162
+[Train][10] Acc: source 0.950 (9708.0/10215) target 0.241 (1445.0/3750)
+[Train][11] Loss: E_pred 0.131
+[Train][11] Acc: source 0.964 (9843.0/10215) target 0.249 (1492.0/3750)
+[Train][12] Loss: E_pred 0.107
+[Train][12] Acc: source 0.971 (9922.0/10215) target 0.249 (1497.0/3750)
+[Train][13] Loss: E_pred 0.092
+[Train][13] Acc: source 0.977 (9981.0/10215) target 0.251 (1506.0/3750)
+[Train][14] Loss: E_pred 0.095
+[Train][14] Acc: source 0.974 (9952.0/10215) target 0.255 (1528.0/3750)
+[Train][15] Loss: E_pred 0.081
+[Train][15] Acc: source 0.979 (9996.0/10215) target 0.253 (1516.0/3750)
+[Train][16] Loss: E_pred 0.060
+[Train][16] Acc: source 0.987 (10082.0/10215) target 0.255 (1530.0/3750)
+[Train][17] Loss: E_pred 0.086
+[Train][17] Acc: source 0.977 (9983.0/10215) target 0.254 (1522.0/3750)
+[Train][18] Loss: E_pred 0.075
+[Train][18] Acc: source 0.979 (10000.0/10215) target 0.243 (1461.0/3750)
+[Train][19] Loss: E_pred 0.036
+[Train][19] Acc: source 0.994 (10154.0/10215) target 0.253 (1516.0/3750)
+
+Eval MNIST: [0.    0.618 0.485 0.379 0.218 0.245 0.182 0.273 0.206 0.242] src: 0.618 tgt:0.279
+[Train][20] Loss: E_pred 0.053
+[Train][20] Acc: source 0.987 (10083.0/10215) target 0.246 (1476.0/3750)
+[Train][21] Loss: E_pred 0.065
+[Train][21] Acc: source 0.983 (10038.0/10215) target 0.237 (1425.0/3750)
+[Train][22] Loss: E_pred 0.040
+[Train][22] Acc: source 0.992 (10134.0/10215) target 0.254 (1524.0/3750)
+[Train][23] Loss: E_pred 0.028
+[Train][23] Acc: source 0.994 (10154.0/10215) target 0.260 (1558.0/3750)
+[Train][24] Loss: E_pred 0.094
+[Train][24] Acc: source 0.974 (9949.0/10215) target 0.245 (1473.0/3750)
+[Train][25] Loss: E_pred 0.047
+[Train][25] Acc: source 0.989 (10105.0/10215) target 0.247 (1483.0/3750)
+[Train][26] Loss: E_pred 0.011
+[Train][26] Acc: source 0.999 (10208.0/10215) target 0.259 (1554.0/3750)
+[Train][27] Loss: E_pred 0.008
+[Train][27] Acc: source 0.999 (10206.0/10215) target 0.261 (1564.0/3750)
+[Train][28] Loss: E_pred 0.105
+[Train][28] Acc: source 0.967 (9881.0/10215) target 0.242 (1451.0/3750)
+[Train][29] Loss: E_pred 0.046
+[Train][29] Acc: source 0.988 (10095.0/10215) target 0.254 (1524.0/3750)
+
+Eval MNIST: [0.    0.642 0.506 0.394 0.282 0.245 0.185 0.3   0.27  0.258] src: 0.642 tgt:0.305
+[Train][30] Loss: E_pred 0.021
+[Train][30] Acc: source 0.997 (10183.0/10215) target 0.255 (1531.0/3750)
+[Train][31] Loss: E_pred 0.016
+[Train][31] Acc: source 0.997 (10186.0/10215) target 0.264 (1583.0/3750)
+[Train][32] Loss: E_pred 0.084
+[Train][32] Acc: source 0.974 (9946.0/10215) target 0.261 (1568.0/3750)
+[Train][33] Loss: E_pred 0.032
+[Train][33] Acc: source 0.993 (10139.0/10215) target 0.261 (1569.0/3750)
+[Train][34] Loss: E_pred 0.010
+[Train][34] Acc: source 0.999 (10206.0/10215) target 0.273 (1638.0/3750)
+[Train][35] Loss: E_pred 0.025
+[Train][35] Acc: source 0.993 (10143.0/10215) target 0.267 (1601.0/3750)
+[Train][36] Loss: E_pred 0.065
+[Train][36] Acc: source 0.981 (10022.0/10215) target 0.242 (1454.0/3750)
+[Train][37] Loss: E_pred 0.022
+[Train][37] Acc: source 0.995 (10169.0/10215) target 0.252 (1513.0/3750)
+[Train][38] Loss: E_pred 0.015
+[Train][38] Acc: source 0.998 (10191.0/10215) target 0.267 (1605.0/3750)
+[Train][39] Loss: E_pred 0.010
+[Train][39] Acc: source 0.999 (10203.0/10215) target 0.267 (1603.0/3750)
+
+Eval MNIST: [0.    0.676 0.506 0.397 0.27  0.261 0.236 0.345 0.264 0.248] src: 0.676 tgt:0.316
+[Train][40] Loss: E_pred 0.004
+[Train][40] Acc: source 1.000 (10214.0/10215) target 0.259 (1553.0/3750)
+[Train][41] Loss: E_pred 0.112
+[Train][41] Acc: source 0.965 (9862.0/10215) target 0.249 (1496.0/3750)
+[Train][42] Loss: E_pred 0.042
+[Train][42] Acc: source 0.990 (10115.0/10215) target 0.258 (1548.0/3750)
+[Train][43] Loss: E_pred 0.013
+[Train][43] Acc: source 0.999 (10200.0/10215) target 0.266 (1599.0/3750)
+[Train][44] Loss: E_pred 0.006
+[Train][44] Acc: source 0.999 (10208.0/10215) target 0.273 (1636.0/3750)
+[Train][45] Loss: E_pred 0.058
+[Train][45] Acc: source 0.984 (10051.0/10215) target 0.244 (1466.0/3750)
+[Train][46] Loss: E_pred 0.025
+[Train][46] Acc: source 0.994 (10157.0/10215) target 0.249 (1492.0/3750)
+[Train][47] Loss: E_pred 0.008
+[Train][47] Acc: source 0.999 (10207.0/10215) target 0.260 (1561.0/3750)
+[Train][48] Loss: E_pred 0.029
+[Train][48] Acc: source 0.992 (10129.0/10215) target 0.261 (1567.0/3750)
+[Train][49] Loss: E_pred 0.035
+[Train][49] Acc: source 0.992 (10135.0/10215) target 0.256 (1539.0/3750)
+
+Eval MNIST: [0.    0.655 0.464 0.318 0.245 0.242 0.248 0.288 0.261 0.17 ] src: 0.655 tgt:0.28
+[Train][50] Loss: E_pred 0.013
+[Train][50] Acc: source 0.998 (10195.0/10215) target 0.264 (1582.0/3750)
+[Train][51] Loss: E_pred 0.006
+[Train][51] Acc: source 1.000 (10213.0/10215) target 0.263 (1581.0/3750)
+[Train][52] Loss: E_pred 0.054
+[Train][52] Acc: source 0.983 (10044.0/10215) target 0.255 (1533.0/3750)
+[Train][53] Loss: E_pred 0.025
+[Train][53] Acc: source 0.995 (10167.0/10215) target 0.254 (1525.0/3750)
+[Train][54] Loss: E_pred 0.006
+[Train][54] Acc: source 1.000 (10212.0/10215) target 0.270 (1620.0/3750)
+[Train][55] Loss: E_pred 0.002
+[Train][55] Acc: source 1.000 (10215.0/10215) target 0.279 (1674.0/3750)
+[Train][56] Loss: E_pred 0.002
+[Train][56] Acc: source 1.000 (10215.0/10215) target 0.270 (1621.0/3750)
+[Train][57] Loss: E_pred 0.002
+[Train][57] Acc: source 1.000 (10215.0/10215) target 0.275 (1648.0/3750)
+[Train][58] Loss: E_pred 0.057
+[Train][58] Acc: source 0.980 (10008.0/10215) target 0.261 (1568.0/3750)
+[Train][59] Loss: E_pred 0.087
+[Train][59] Acc: source 0.976 (9969.0/10215) target 0.251 (1505.0/3750)
+
+Eval MNIST: [0.    0.67  0.518 0.397 0.236 0.294 0.267 0.279 0.282 0.197] src: 0.67 tgt:0.309
+[Train][60] Loss: E_pred 0.008
+[Train][60] Acc: source 1.000 (10214.0/10215) target 0.268 (1607.0/3750)
+[Train][61] Loss: E_pred 0.004
+[Train][61] Acc: source 1.000 (10213.0/10215) target 0.265 (1591.0/3750)
+[Train][62] Loss: E_pred 0.003
+[Train][62] Acc: source 1.000 (10215.0/10215) target 0.275 (1652.0/3750)
+[Train][63] Loss: E_pred 0.059
+[Train][63] Acc: source 0.982 (10028.0/10215) target 0.256 (1538.0/3750)
+[Train][64] Loss: E_pred 0.013
+[Train][64] Acc: source 0.999 (10206.0/10215) target 0.273 (1636.0/3750)
+[Train][65] Loss: E_pred 0.004
+[Train][65] Acc: source 1.000 (10215.0/10215) target 0.275 (1652.0/3750)
+[Train][66] Loss: E_pred 0.002
+[Train][66] Acc: source 1.000 (10215.0/10215) target 0.276 (1656.0/3750)
+[Train][67] Loss: E_pred 0.018
+[Train][67] Acc: source 0.995 (10164.0/10215) target 0.265 (1592.0/3750)
+[Train][68] Loss: E_pred 0.043
+[Train][68] Acc: source 0.989 (10106.0/10215) target 0.252 (1513.0/3750)
+[Train][69] Loss: E_pred 0.005
+[Train][69] Acc: source 1.000 (10215.0/10215) target 0.258 (1551.0/3750)
+
+Eval MNIST: [0.    0.682 0.53  0.4   0.264 0.242 0.242 0.306 0.294 0.242] src: 0.682 tgt:0.315
+[Train][70] Loss: E_pred 0.002
+[Train][70] Acc: source 1.000 (10215.0/10215) target 0.265 (1593.0/3750)
+[Train][71] Loss: E_pred 0.003
+[Train][71] Acc: source 1.000 (10210.0/10215) target 0.270 (1619.0/3750)
+[Train][72] Loss: E_pred 0.001
+[Train][72] Acc: source 1.000 (10215.0/10215) target 0.277 (1664.0/3750)
+[Train][73] Loss: E_pred 0.001
+[Train][73] Acc: source 1.000 (10215.0/10215) target 0.275 (1648.0/3750)
+[Train][74] Loss: E_pred 0.001
+[Train][74] Acc: source 1.000 (10215.0/10215) target 0.268 (1608.0/3750)
+[Train][75] Loss: E_pred 0.096
+[Train][75] Acc: source 0.971 (9915.0/10215) target 0.245 (1469.0/3750)
+[Train][76] Loss: E_pred 0.011
+[Train][76] Acc: source 0.999 (10205.0/10215) target 0.269 (1617.0/3750)
+[Train][77] Loss: E_pred 0.004
+[Train][77] Acc: source 1.000 (10215.0/10215) target 0.267 (1601.0/3750)
+[Train][78] Loss: E_pred 0.003
+[Train][78] Acc: source 1.000 (10215.0/10215) target 0.276 (1659.0/3750)
+[Train][79] Loss: E_pred 0.002
+[Train][79] Acc: source 1.000 (10215.0/10215) target 0.274 (1643.0/3750)
+
+Eval MNIST: [0.    0.691 0.542 0.427 0.276 0.294 0.3   0.321 0.291 0.276] src: 0.691 tgt:0.341
+[Train][80] Loss: E_pred 0.002
+[Train][80] Acc: source 1.000 (10214.0/10215) target 0.274 (1643.0/3750)
+[Train][81] Loss: E_pred 0.064
+[Train][81] Acc: source 0.982 (10033.0/10215) target 0.246 (1475.0/3750)
+[Train][82] Loss: E_pred 0.007
+[Train][82] Acc: source 1.000 (10214.0/10215) target 0.266 (1596.0/3750)
+[Train][83] Loss: E_pred 0.003
+[Train][83] Acc: source 1.000 (10215.0/10215) target 0.277 (1662.0/3750)
+[Train][84] Loss: E_pred 0.002
+[Train][84] Acc: source 1.000 (10215.0/10215) target 0.272 (1631.0/3750)
+[Train][85] Loss: E_pred 0.002
+[Train][85] Acc: source 1.000 (10215.0/10215) target 0.278 (1667.0/3750)
+[Train][86] Loss: E_pred 0.001
+[Train][86] Acc: source 1.000 (10215.0/10215) target 0.275 (1652.0/3750)
+[Train][87] Loss: E_pred 0.001
+[Train][87] Acc: source 1.000 (10215.0/10215) target 0.275 (1648.0/3750)
+[Train][88] Loss: E_pred 0.001
+[Train][88] Acc: source 1.000 (10215.0/10215) target 0.275 (1650.0/3750)
+[Train][89] Loss: E_pred 0.078
+[Train][89] Acc: source 0.975 (9960.0/10215) target 0.259 (1553.0/3750)
+
+Eval MNIST: [0.    0.676 0.479 0.424 0.273 0.264 0.261 0.321 0.294 0.248] src: 0.676 tgt:0.32
+[Train][90] Loss: E_pred 0.020
+[Train][90] Acc: source 0.998 (10195.0/10215) target 0.262 (1574.0/3750)
+[Train][91] Loss: E_pred 0.005
+[Train][91] Acc: source 1.000 (10215.0/10215) target 0.267 (1602.0/3750)
+[Train][92] Loss: E_pred 0.004
+[Train][92] Acc: source 1.000 (10214.0/10215) target 0.266 (1597.0/3750)
+[Train][93] Loss: E_pred 0.003
+[Train][93] Acc: source 1.000 (10215.0/10215) target 0.274 (1643.0/3750)
+[Train][94] Loss: E_pred 0.002
+[Train][94] Acc: source 1.000 (10215.0/10215) target 0.270 (1619.0/3750)
+[Train][95] Loss: E_pred 0.002
+[Train][95] Acc: source 1.000 (10215.0/10215) target 0.272 (1633.0/3750)
+[Train][96] Loss: E_pred 0.002
+[Train][96] Acc: source 1.000 (10215.0/10215) target 0.273 (1637.0/3750)
+[Train][97] Loss: E_pred 0.001
+[Train][97] Acc: source 1.000 (10215.0/10215) target 0.274 (1644.0/3750)
+[Train][98] Loss: E_pred 0.001
+[Train][98] Acc: source 1.000 (10215.0/10215) target 0.277 (1660.0/3750)
+[Train][99] Loss: E_pred 0.062
+[Train][99] Acc: source 0.981 (10023.0/10215) target 0.262 (1571.0/3750)
+
+Eval MNIST: [0.    0.697 0.5   0.397 0.233 0.309 0.242 0.33  0.333 0.276] src: 0.697 tgt:0.328
