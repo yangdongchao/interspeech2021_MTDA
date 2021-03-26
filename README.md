@@ -3,11 +3,11 @@ the code for interspeech2021 submission. my interspeech2021 paper name is "Unsup
 In this repository, I finish my method MTDA, which proposed by my paper. Furthermore, I also finish other SOTO methods, these methods are not open source. So I write code for them according to thier paper. The details you can refer my paper. <br/>
 This repository contains the code for six experiments in my paper
 * MTDA: proposed method in my paper.
-* DANN: for paper "Domainadaptation  neural  network  for  acoustic  scene  classification  inmismatched conditions"
+* DANN: for paper "Domain adaptation  neural  network  for  acoustic  scene  classification  inmismatched conditions"
 * MCD: For paper  "Maximumclassifier  discrepancy  for  unsupervised  domain  adaptation"
 * UADA: for paper  "Unsupervised adversarial domain adaptation for acoustic sceneclassification"
 * W-UADA: For paper  "Unsupervised  adver-sarial  domain  adaptation  based  on  the  wasserstein  distance  foracoustic scene classification"
-* MMD: this method have been used in the paper MCD as comparable method, I coding for it according to paper "Learning transferablefeatures with deep adaptation networks"
+* MMD: this method have been used in the paper MCD as comparable method, I code for it according to paper "Learning transferablefeatures with deep adaptation networks"
 
 ## Prerequisites
 
@@ -47,16 +47,16 @@ I am sorry for these dirty code,  I will add note for these code in future to ma
 I will reorganize these code in future, and make it fully.
 ## Organization of the Repository
 
-### model
+### models
 
-The `model` directory contains six methods code, you can find them according their name.
+The `models` directory contains six methods code, you can find them according their name.
 
 ### data
 
 the folder contain dataloader for train and test.
-### bestmodel
- we release part of our training model results, your can use this model to test directly.
+### best_model
+ we release part of our training model results, you can use these models to test directly.
 
 ## Citing
-this code are based  following code:
+this code are based  following code <br/>
 https://github.com/hehaodele/CIDA
