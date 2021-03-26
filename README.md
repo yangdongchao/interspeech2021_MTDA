@@ -4,7 +4,7 @@ In this repository, I finish my method MTDA, which proposed by my paper. Further
 This repository contains the code for six experiments in my paper
 * MTDA: proposed method in my paper.
 * DANN: for paper "Domain adaptation  neural  network  for  acoustic  scene  classification  inmismatched conditions"
-* MCD: For paper  "Maximumclassifier  discrepancy  for  unsupervised  domain  adaptation"
+* MCD: For paper  "Maximum classifier  discrepancy  for  unsupervised  domain  adaptation"
 * UADA: for paper  "Unsupervised adversarial domain adaptation for acoustic sceneclassification"
 * W-UADA: For paper  "Unsupervised  adver-sarial  domain  adaptation  based  on  the  wasserstein  distance  foracoustic scene classification"
 * MMD: this method have been used in the paper MCD as comparable method, I code for it according to paper "Learning transferablefeatures with deep adaptation networks"
