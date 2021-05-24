@@ -1,6 +1,6 @@
 # interspeech2021_MTDA
 the code for interspeech2021 submission. my interspeech2021 paper name is "Unsupervised Multi-Target Domain Adaptation for Acoustic Scene Classification". <br/>
-In this repository, I finish my method MTDA, which proposed by my paper. Furthermore, I also finish other SOTO methods, many of methods are not open source. So I write code for them according to thier paper. The details you can refer my paper. After the review, I will release my paper as soon as possible on arxiv. <br/>
+In this repository, I finish my method MTDA, which proposed by my paper. Furthermore, I also finish other SOTO methods, many of methods are not open source. So I write code for them according to thier paper. The details you can refer my paper. <a>http://arxiv.org/abs/2105.10340</a> <br/>
 This repository contains the code for six experiments in my paper
 * MTDA: The proposed method in my paper.
 * DANN: For paper "Domain adaptation  neural  network  for  acoustic  scene  classification  inmismatched conditions", you can get more details on this paper.
