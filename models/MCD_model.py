@@ -225,20 +225,9 @@ class BaseModel(nn.Module):
         Y = to_np(self.y)
         G = to_np(self.g)
         T = to_np(self.domain) # self.domain : 所属的域[0,5]
-        # print('Y ',Y)
-        # print('G ',G.shape)
-        # print('T ',T.shape)
         if Y.shape[0]!=G.shape[0]:
             return
-            # mi = min(Y.shape[0],G.shape[0])
-            # Y = Y[:mi]
-            # G = G[:mi]
-        # print('G ',G)
-        # print('T ',T)
         T = (T * 10).astype(np.int32) #[0,9]
-        # T[T >= 8] = 7 #  大于8，强制转7
-        # print('Y ',Y.shape)
-        # print('g ',G.shape)
         hit = (Y == G).astype(np.float32) # 是否预测正确
         # print('hit ',hit)
         is_s = to_np(self.is_source)
@@ -262,8 +251,6 @@ class BaseModel(nn.Module):
     def set_input(self, input):
         # print('set_input ')
         self.x, self.y, self.u, self.domain = input
-        # print('self.u ',self.u)
-        # print('self.domain ',self.domain)
         self.domain = self.domain[:, 0]/10.0
         self.u = self.u[:,0]/10.0
         
@@ -296,8 +283,6 @@ class BaseModel(nn.Module):
             for loss in self.loss_names
         }
         self.acc_reset_mnist()
-        # print('dataloader ',len(dataloader))
-        # print('dataloader[0]',dataloader[0])
         bar = ProgressBar()
         
         for data in bar(dataloader):
@@ -436,84 +421,6 @@ class Classifier(nn.Module):
         out = self.fc2(z)
         output = F.log_softmax(out, dim=-1)
         return output
-class ResidualBlock(nn.Module):
-    def __init__(self, inchannel, outchannel, stride=1):
-        super(ResidualBlock, self).__init__()
-        self.left = nn.Sequential(
-            nn.Conv2d(inchannel, outchannel, kernel_size=3, stride=stride, padding=1, bias=False),
-            nn.BatchNorm2d(outchannel),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(outchannel, outchannel, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(outchannel)
-        )
-        self.shortcut = nn.Sequential()
-        if stride != 1 or inchannel != outchannel:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(inchannel, outchannel, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(outchannel)
-            )
-
-    def forward(self, x):
-        out = self.left(x)
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-
-class ResNet_MCD(nn.Module):
-    def __init__(self, ResidualBlock, num_classes=10):
-        super(ResNet_MCD, self).__init__()
-        self.inchannel = 64
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-        )
-        self.layer1 = self.make_layer(ResidualBlock, 64,  2, stride=1)
-        self.layer2 = self.make_layer(ResidualBlock, 128, 2, stride=2)
-        self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)
-        #self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)
-
-    def make_layer(self, block, channels, num_blocks, stride):
-        strides = [stride] + [1] * (num_blocks - 1)   #strides=[1,1]
-        layers = []
-        for stride in strides:
-            layers.append(block(self.inchannel, channels, stride))
-            self.inchannel = channels
-        return nn.Sequential(*layers)
-
-    def forward(self, x,u):
-        tmp_y = u
-        x = x[:,None,:,:]
-        out = self.conv1(x)
-        out = self.layer1(out)
-        out = self.layer2(out)
-        z = self.layer3(out)
-        #z = self.layer4(out)
-        E = z
-        self.feature = E.detach()  # 保存
-        self.target = tmp_y.detach()
-
-        return z
-
-
-def ResNet18():
-    return ResNet_MCD(ResidualBlock)
-
-class Classifier_res(nn.Module):
-    def __init__(self):
-        super(Classifier_res,self).__init__()
-        self.fc1 = nn.Linear(256,128)
-        self.fc = nn.Linear(128, 10)
-        self.bn1_fc = nn.BatchNorm1d(128)
-    def forward(self,x):
-        # x = self.conv_block4(x)
-        z = torch.mean(x, dim=3)        # (batch_size, feature_maps, time_stpes)
-        # print('z_mean ',z.shape)
-        (z, _) = torch.max(z, dim=2)    # (batch_size, feature_maps)
-        z = self.bn1_fc(self.fc1(z))
-        out = self.fc(z)
-        output = F.log_softmax(out, dim=-1)
-        return output
 
 class MCD(BaseModel):
     def __init__(self, opt):
@@ -638,115 +545,3 @@ class MCD(BaseModel):
             self.optimizer_G.step()
             self.reset_optimizer()
         
-
-class MCD_res(BaseModel):
-    def __init__(self, opt):
-        super(MCD_res, self).__init__(opt)
-
-        self.opt = opt
-        self.netG = ResNet18()
-        self.num_k = opt.num_k
-        # self.init_weight(self.netE)
-        self.C1 = Classifier_res()
-        self.C2 = Classifier_res()
-        self.optimizer_G = torch.optim.Adam(self.netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.optimizer_C1 = torch.optim.Adam(self.C1.parameters(),lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.optimizer_C2 = torch.optim.Adam(self.C2.parameters(),lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.lr_scheduler_G = lr_scheduler.ExponentialLR(optimizer=self.optimizer_G, gamma=0.5 ** (1 / 50))
-        self.lr_scheduler_C1 = lr_scheduler.ExponentialLR(optimizer=self.optimizer_C1, gamma=0.5 ** (1 / 50))
-        self.lr_scheduler_C2 = lr_scheduler.ExponentialLR(optimizer=self.optimizer_C2, gamma=0.5 ** (1 / 50))
-        self.lr_schedulers = [self.lr_scheduler_G, self.lr_scheduler_C1,self.lr_scheduler_C2]
-        self.train_log = opt.outf + '/MCD_res.log'
-        self.model_path = opt.outf + '/MCD_res.pth'
-        self.lambda_gan = opt.lambda_gan
-        self.loss_names = ['s', 'c', 'd']
-
-    def reset_optimizer(self):
-        self.optimizer_G.zero_grad()
-        self.optimizer_C1.zero_grad()
-        self.optimizer_C2.zero_grad()
-
-    def set_input(self, input):
-        self.x, self.y, self.u, self.domain = input
-        self.u = self.u[:,0]/10.0
-        self.domain = self.domain[:,0]/10.0
-        self.is_source = (self.domain*10 <=1).to(torch.float)  # ??? 先强制转为int
-        # print('self.is_source ',self.is_source)
-    def forward(self):
-        feat = self.netG(self.x,self.u)
-        output1 = self.C1(feat)
-        output2 = self.C2(feat)
-        # print('feat ',feat.shape)
-        g1 = torch.argmax(output1.detach(), dim=1)  # self.g为最后的预测
-        g2 = torch.argmax(output2.detach(), dim=1)
-        # print('g1 ',g1.shape)
-        # print('g2 ',g2.shape)
-        if (g1==self.y).sum()>(g2==self.y).sum():
-            self.g = g1
-        else:
-            self.g = g2
-
-    def discrepancy(self, out1, out2):
-        return torch.mean(torch.abs(F.softmax(out1) - F.softmax(out2)))
-
-    def optimize_parameters(self):
-        x_s = self.x[self.is_source==1]
-        x_t = self.x[self.is_source==0]
-        label_s = self.y[self.is_source==1]
-        label_t = self.y[self.is_source==0]
-        u_s = self.u[self.is_source==1]
-        u_t = self.u[self.is_source==0]
-        if x_s.shape[0]<=2 or x_t.shape[0]<=2:
-            return
-        feat_s = self.netG(x_s, u_s)
-        output_s1 = self.C1(feat_s)
-        output_s2 = self.C2(feat_s)
-
-        feat = self.netG(self.x,self.u)
-        output1 = self.C1(feat)
-        output2 = self.C2(feat)
-
-        loss_s1 = F.nll_loss(output_s1, label_s.long())
-        loss_s2 = F.nll_loss(output_s2, label_s.long())
-        self.loss_s = loss_s1 + loss_s2
-        self.loss_s.backward()
-        self.optimizer_G.step()
-        self.optimizer_C1.step()
-        self.optimizer_C2.step()
-        self.reset_optimizer()  # 用源域数据训练
-
-        g1 = torch.argmax(output1.detach(), dim=1)  # self.g为最后的预测
-        g2 = torch.argmax(output2.detach(), dim=1)
-        if (g1==self.y).sum()>(g2==self.y).sum():
-            self.g = g1
-        else:
-            self.g = g2
-
-        if x_t.shape[0]<=2:  # 若没有目标域
-            return
-            
-        feat_s = self.netG(x_s,u_s)
-        output_s1 = self.C1(feat_s)
-        output_s2 = self.C2(feat_s)
-        feat_t = self.netG(x_t,u_t)
-        output_t1 = self.C1(feat_t)
-        output_t2 = self.C2(feat_t)
-
-        loss_s1 = F.nll_loss(output_s1, label_s.long())
-        loss_s2 = F.nll_loss(output_s2, label_s.long())
-        loss_s = loss_s1 + loss_s2
-        loss_dis = self.discrepancy(output_t1, output_t2)
-        self.loss_c = loss_s - loss_dis
-        self.loss_c.backward()
-        self.optimizer_C1.step()
-        self.optimizer_C2.step()
-        self.reset_optimizer()  # 尽可能的最大化两个分类器
-
-        for i in range(self.num_k):  # 最小化目标域的G
-            feat_t = self.netG(x_t,u_t)
-            output_t1 = self.C1(feat_t)
-            output_t2 = self.C2(feat_t)
-            self.loss_d = self.discrepancy(output_t1, output_t2)
-            self.loss_d.backward()
-            self.optimizer_G.step()
-            self.reset_optimizer()

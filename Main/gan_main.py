@@ -1,3 +1,4 @@
+# UADA
 from easydict import EasyDict
 import sys
 sys.path.append('/home/ydc/code2/CIDA-ASC')
@@ -106,10 +107,6 @@ if pre_train:
     model = model.to(opt.device)
     #model.load_state_dict(torch.load('/home/ydc/code2/CIDA-ASC/Main/dump/gan20_last_versiongan/_20domain_adaptation_train.pth'))
     print(model)
-    # model.load_state_dict(torch.load('/home/ydc/code2/CIDA-ASC/dump/adapt_trainadapt/_domain_adaptation_train.pth'))
-    # model.eval_mnist(train_dataloader)
-    # model.gen_result_table(train_dataloader)
-    # Find total parameters and trainable parameters
     total_params = sum(p.numel() for p in model.parameters())
     print(f'{total_params:,} total parameters.')
     total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)

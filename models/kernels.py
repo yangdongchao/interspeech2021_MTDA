@@ -4,7 +4,7 @@ import torch.nn as nn
 from numpy import array, dot
 import numpy as np
 from qpsolvers import solve_qp
-
+# this part from https://github.com/thuml/Transfer-Learning-Library
 
 __all__ = ['GaussianKernel']
 

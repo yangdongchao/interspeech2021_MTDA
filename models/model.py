@@ -232,66 +232,6 @@ class Encoder2019(nn.Module):
         self.feature = E.detach()
         self.target = tmp_y.detach()
         return output, x
-class EncoderCNN(nn.Module):
-    def __init__(self, classes_num, activation):
-        super(EncoderCNN, self).__init__()
-
-        self.activation = activation
-
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.feature = None
-        self.target = None
-
-        self.fc = nn.Linear(512, classes_num, bias=True)
-
-        self.init_weights()
-    def init_weights(self):
-        init_layer(self.fc)
-    def forward(self, x, u):
-
-        """
-        :param x: (batch_size, times_steps, freq_bins)
-        :param u: (batch_size,)
-        :return:
-        """
-        # print('x ',x.shape)
-        # print('u ',u.shape)
-        tmp_y = u
-        u_new = torch.reshape(u,(u.shape[0],1,1))
-        # print('u_new ',u_new.shape)
-        u_new = u_new.repeat((1,x.shape[1],1))
-        # print('u_new2 ',u_new.shape)
-        x = torch.cat((x,u_new),dim=-1) # (b,1,t,f+1)
-        # print('x0 ',x.shape)
-        x = x[:,None,:,:]
-        # print('x1 ',x.shape)
-        x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg') 
-        # print('x_conv1 ',x.shape)
-        x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        # print('x_conv2 ',x.shape)
-        x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg') # (batch_size, feature_maps, time_steps, freq_bins+1)
-        E = x
-        # print('x_cov3 ',x.shape)
-        z = self.conv_block4(x, pool_size=(1, 1), pool_type='avg')
-        # print('z ',z.shape)
-        z = torch.mean(z, dim=3)        # (batch_size, feature_maps, time_stpes)
-        # print('z_mean ',z.shape)
-        (z, _) = torch.max(z, dim=2)    # (batch_size, feature_maps)
-        # print('z_max ',z.shape)
-        z = self.fc(z)
-        # print('z_fc ',z.shape)
-        if self.activation == 'logsoftmax':
-            output = F.log_softmax(z, dim=-1)
-            
-        elif self.activation == 'sigmoid':
-            output = torch.sigmoid(z)
-        # print('output ',output.shape)
-        self.feature = E.detach()
-        self.target = tmp_y.detach()
-        return output, x
 class EncoderCNNWithoutIndex(nn.Module):
     def __init__(self, classes_num, activation):
         super(EncoderCNNWithoutIndex, self).__init__()
@@ -317,15 +257,7 @@ class EncoderCNNWithoutIndex(nn.Module):
         :param u: (batch_size,)
         :return:
         """
-        # print('x ',x.shape)
-        # print('u ',u.shape)
         tmp_y = u
-        # u_new = torch.reshape(u,(u.shape[0],1,1))
-        # # print('u_new ',u_new.shape)
-        # u_new = u_new.repeat((1,x.shape[1],1))
-        # print('u_new2 ',u_new.shape)
-        #x = torch.cat((x,u_new),dim=-1) # (b,1,t,f+1)
-        # print('x0 ',x.shape)
         x = x[:,None,:,:]
         # print('x1 ',x.shape)
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg') 
@@ -352,103 +284,6 @@ class EncoderCNNWithoutIndex(nn.Module):
         self.feature = E.detach()
         self.target = tmp_y.detach()
         return output, x
-class ResidualBlock(nn.Module):
-    def __init__(self, inchannel, outchannel, stride=1):
-        super(ResidualBlock, self).__init__()
-        self.left = nn.Sequential(
-            nn.Conv2d(inchannel, outchannel, kernel_size=3, stride=stride, padding=1, bias=False),
-            nn.BatchNorm2d(outchannel),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(outchannel, outchannel, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(outchannel)
-        )
-        self.shortcut = nn.Sequential()
-        if stride != 1 or inchannel != outchannel:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(inchannel, outchannel, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(outchannel)
-            )
-
-    def forward(self, x):
-        out = self.left(x)
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-
-class ResNet(nn.Module):
-    def __init__(self, ResidualBlock, num_classes=10):
-        super(ResNet, self).__init__()
-        self.inchannel = 64
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-        )
-        self.layer1 = self.make_layer(ResidualBlock, 64,  2, stride=1)
-        self.layer2 = self.make_layer(ResidualBlock, 128, 2, stride=2)
-        self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)
-        #self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)
-        self.fc1 = nn.Linear(256,128)
-        self.fc = nn.Linear(128, num_classes)
-
-    def make_layer(self, block, channels, num_blocks, stride):
-        strides = [stride] + [1] * (num_blocks - 1)   #strides=[1,1]
-        layers = []
-        for stride in strides:
-            layers.append(block(self.inchannel, channels, stride))
-            self.inchannel = channels
-        return nn.Sequential(*layers)
-
-    def forward(self, x,u):
-        tmp_y = u
-        x = x[:,None,:,:]
-        out = self.conv1(x)
-        out = self.layer1(out)
-        out = self.layer2(out)
-        z = self.layer3(out)
-        #z = self.layer4(out)
-        E = z
-        #print('E ',E.shape)
-        #clf = F
-        #print('clf ',clf.shape)
-        # clf = F.avg_pool2d(z, 4)
-        # print('clf2 ',clf.shape)
-        # clf = out.view(clf.size(0), -1)
-        # print('clf3 ',clf.shape)
-        z_x = torch.mean(z, dim=3)        # (batch_size, feature_maps, time_stpes)
-        # print('z_mean ',z.shape)
-        (z_x, _) = torch.max(z_x, dim=2)    # (batch_size, feature_maps)
-        #print('z_x ',z_x.shape)
-        out = self.fc1(z_x)
-        out = self.fc(out)
-        output = F.log_softmax(out, dim=-1) # 求log_softmax
-
-        self.feature = E.detach()  # 保存
-        self.target = tmp_y.detach()
-
-        return output, z
-
-
-def ResNet18():
-    return ResNet(ResidualBlock)
-
-class LinearDis(nn.Module):
-    def __init__(self, nin, nout):
-        super(LinearDis,self).__init__()
-        self.fc1 = nn.Linear(256,128)
-        self.fc = nn.Linear(128, nout)
-        self.bn1 = nn.BatchNorm1d(128)
-        #self.bn2 = nn.BatchNorm1d(1)
-    def forward(self,x):
-        z_x = torch.mean(x, dim=3)        # (batch_size, feature_maps, time_stpes)
-        # print('z_mean ',z.shape)
-        (z_x, _) = torch.max(z_x, dim=2)    # (batch_size, feature_maps)
-        out = self.fc1(z_x)
-        out = self.bn1(out)
-        out =F.relu_(out)
-        out = self.fc(out)
-        out = F.relu_(out)
-        return out
 
 
 class DiscConv(nn.Module):
@@ -462,24 +297,6 @@ class DiscConv(nn.Module):
             nnMeanAndMax(),
             nn.Linear(nh, nout),
         )
-        # print(self.net)
-
-    def forward(self, x):
-        #print('x_DiscConv ',x.shape)
-        return self.net(x)
-class DiscConv_res(nn.Module):
-    def __init__(self, nin, nout):
-        super(DiscConv_res, self).__init__()
-        nh = 512
-        self.net = nn.Sequential(
-            nn.Conv2d(nin, nh, 1, 1, 0), nn.BatchNorm2d(nh), nn.LeakyReLU(),
-            nn.Conv2d(nh, nh, 1, 1, 0), nn.BatchNorm2d(nh), nn.LeakyReLU(),
-            nn.Conv2d(nh, nh, 1, 1, 0), nn.BatchNorm2d(nh), nn.LeakyReLU(),
-            nnMeanAndMax(),
-            nn.Linear(nh, nout),
-        )
-        # print(self.net)
-
     def forward(self, x):
         #print('x_DiscConv ',x.shape)
         return self.net(x)
@@ -705,139 +522,6 @@ class BaseModel(nn.Module):
         #print('average ',)
         print(res)
 
-class CIDA_RES(BaseModel):
-    def __init__(self, opt):
-        super(CIDA_RES, self).__init__(opt)
-
-        self.opt = opt
-        self.netE = ResNet18()  # or EncoderCNN
-        # self.init_weight(self.netE)
-        self.netD = DiscConv_res(nin=opt.nz, nout=opt.dim_domain)
-        self.optimizer_G = torch.optim.Adam(self.netE.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.optimizer_D = torch.optim.Adam(self.netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.lr_scheduler_G = lr_scheduler.ExponentialLR(optimizer=self.optimizer_G, gamma=0.5 ** (1 / 50))
-        self.lr_scheduler_D = lr_scheduler.ExponentialLR(optimizer=self.optimizer_D, gamma=0.5 ** (1 / 50))
-        self.lr_schedulers = [self.lr_scheduler_G, self.lr_scheduler_D]
-        self.train_log = opt.outf + '/resnet_less_CIDA.log'
-        self.model_path = opt.outf + '/resnet_less_CIDA.pth'
-        self.lambda_gan = opt.lambda_gan
-        self.loss_names = ['D', 'E_gan', 'E_pred']
-
-    def set_input(self, input):
-        self.x, self.y, self.u, self.domain = input
-        self.u = self.u[:,0]/10.0
-        self.domain = self.domain[:,0]/10.0
-        self.is_source = (self.domain*10 <=1).to(torch.float)  # ??? 先强制转为int
-        # print('self.is_source ',self.is_source)
-
-    def forward(self):
-        self.f , self.e = self.netE(self.x, self.u)
-        # print('self.f ',self.f.shape)
-        # print('self.e ',self.e.shape)
-        self.g = torch.argmax(self.f.detach(), dim=1)  # self.g为最后的预测
-
-    def backward_G(self):
-        self.d = self.netD(self.e)
-        self.d = torch.squeeze(self.d)
-        E_gan_src = F.mse_loss(self.d[self.is_source == 1], self.u[self.is_source == 1])
-        E_gan_tgt = F.mse_loss(self.d[self.is_source == 0], self.u[self.is_source == 0])
-        if len(self.d[self.is_source == 1])==0:
-            self.loss_E_gan = -E_gan_tgt/2.0
-        elif len(self.d[self.is_source == 0])==0:
-            self.loss_E_gan = -E_gan_src/2.0
-        else:
-            self.loss_E_gan = -(E_gan_src + E_gan_tgt) / 2.0
-        # print('self.loss_E_gan ',self.loss_E_gan)
-        self.y_source = self.y[self.is_source == 1]
-        self.f_source = self.f[self.is_source == 1]
-        # print('self.f_source ',self.f_source)
-        # print('self.y_source ',self.y_source)
-        self.loss_E_pred = F.nll_loss(self.f_source, self.y_source.long())
-        # print('self.loss_E_pred ',self.loss_E_pred)
-        self.loss_E = self.loss_E_gan * self.lambda_gan + self.loss_E_pred
-        # print('self.loss_E',self.loss_E)
-        # self.loss_E = torch.tensor(self.loss_E, dtype=float,requires_grad=True)
-        self.loss_E.backward()
-
-    def backward_D(self):
-        self.d = self.netD(self.e.detach())
-        self.d=torch.squeeze(self.d)
-        D_src = F.mse_loss(self.d[self.is_source == 1], self.u[self.is_source == 1])
-        D_tgt = F.mse_loss(self.d[self.is_source == 0], self.u[self.is_source == 0])
-        # print('D_tgt ',D_tgt.dtype)
-        if len(self.d[self.is_source == 1])==0:
-            self.loss_D = D_tgt/2.0
-        elif len(self.d[self.is_source == 0])==0:
-            self.loss_D = D_src/2.0
-        else:
-            self.loss_D = (D_src.float() + D_tgt.float()) / 2.0
-        # print('D_tgt ',D_tgt)
-        # print('self.loss_D ',self.loss_D)
-        # self.loss_D = torch.tensor(self.loss_D, dtype=float,requires_grad=True)
-        self.loss_D.backward()
-
-    def optimize_parameters(self):
-        self.forward()
-        # update D
-        self.set_requires_grad(self.netD, True)
-        self.optimizer_D.zero_grad()
-        self.backward_D()
-        self.optimizer_D.step()
-        # update G
-        self.set_requires_grad(self.netD, False)
-        self.optimizer_G.zero_grad()
-        self.backward_G()
-        self.optimizer_G.step()   
-
-class CIDA_NO(BaseModel):
-    def __init__(self, opt):
-        super(CIDA_NO, self).__init__(opt)
-
-        self.opt = opt
-        self.netE = ResNet18()  # or EncoderCNN
-        # self.init_weight(self.netE)
-        #self.netD = LinearDis(nin=opt.nz, nout=opt.dim_domain)
-        self.optimizer_G = torch.optim.Adam(self.netE.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        #self.optimizer_D = torch.optim.Adam(self.netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.lr_scheduler_G = lr_scheduler.ExponentialLR(optimizer=self.optimizer_G, gamma=0.5 ** (1 / 50))
-        #self.lr_scheduler_D = lr_scheduler.ExponentialLR(optimizer=self.optimizer_D, gamma=0.5 ** (1 / 50))
-        self.lr_schedulers = [self.lr_scheduler_G]
-        self.train_log = opt.outf + '/resnetCIDA_No.log'
-        self.model_path = opt.outf + '/resnetCIDA_No.pth'
-        self.lambda_gan = opt.lambda_gan
-        self.loss_names = ['E_pred']
-
-    def set_input(self, input):
-        self.x, self.y, self.u, self.domain = input
-        self.u = self.u[:,0]/10.0
-        self.domain = self.domain[:,0]/10.0
-        self.is_source = (self.domain*10 <=1).to(torch.float)  # ??? 先强制转为int
-        # print('self.is_source ',self.is_source)
-
-    def forward(self):
-        self.f , self.e = self.netE(self.x, self.u)
-        # print('self.f ',self.f.shape)
-        # print('self.e ',self.e.shape)
-        self.g = torch.argmax(self.f.detach(), dim=1)  # self.g为最后的预测
-
-    def backward_G(self):
-        self.y_source = self.y[self.is_source == 1]
-        self.f_source = self.f[self.is_source == 1]
-        # print('self.f_source ',self.f_source)
-        # print('self.y_source ',self.y_source)
-        self.loss_E_pred = F.nll_loss(self.f_source, self.y_source.long())
-        # print('self.loss_E_pred ',self.loss_E_pred)
-        self.loss_E =  self.loss_E_pred
-        self.loss_E.backward()
-
-
-    def optimize_parameters(self):
-        self.forward()
-        self.optimizer_G.zero_grad()
-        self.backward_G()
-        self.optimizer_G.step()   
-
-
 class CIDA(BaseModel):
     def __init__(self, opt):
         super(CIDA, self).__init__(opt)
@@ -860,22 +544,6 @@ class CIDA(BaseModel):
         self.x, self.y, self.u, self.domain = input
         self.u = self.u[:,0]/10.0
         self.domain = self.domain[:,0]/10.0
-        # self.u = self.u[:]/10.0   #适用于最后的实验，但目前基本不可能用到了
-        # self.domain = self.domain[:]/10.0
-        # print('self.x ',self.x.shape)
-        # print('self.y ',self.y.shape)
-        # print('self.u ',self.u.shape)
-        # print('self.domain ',self.domain.shape)
-        # self.domain = self.domain[:, 0]
-        # print('self.domain_new ',self.domain)
-        # self.is_train_target = torch.FloatTensor(self.domain.shape[0],)
-        # for n,u in enumerate(self.domain):
-        #     if u*10 != 5:
-        #         self.is_train_target[n] = 1.0
-        #     else:
-        #         self.is_train_target[n] = 0
-        # print('self.domain ',self.domain)
-        #self.is_source = (self.domain*10 <= 1).to(torch.float)
         self.is_target = torch.FloatTensor(self.domain.shape[0],)
         for n,u in enumerate(self.domain):
             if u*10>1 and u*10<4:
@@ -883,12 +551,8 @@ class CIDA(BaseModel):
             else:
                 self.is_target[n] = 0
         self.is_source = (self.domain*10 <=1).to(torch.float)  # ??? 先强制转为int
-        # print('self.is_source ',self.is_source)
-
     def forward(self):
         self.f , self.e = self.netE(self.x, self.u)
-        # print('self.u ',self.u.shape)
-        # print('self.e ',self.e.shape)
         self.g = torch.argmax(self.f.detach(), dim=1)  # self.g为最后的预测
 
     def backward_G(self):
@@ -905,28 +569,15 @@ class CIDA(BaseModel):
         # print('self.loss_E_gan ',self.loss_E_gan)
         self.y_source = self.y[self.is_source == 1]
         self.f_source = self.f[self.is_source == 1]
-        # print('self.f_source ',self.f_source)
-        # print('self.y_source ',self.y_source)
         self.loss_E_pred = F.nll_loss(self.f_source, self.y_source.long())
         # print('self.loss_E_pred ',self.loss_E_pred)
         self.loss_E = self.loss_E_gan * self.lambda_gan + self.loss_E_pred
-        # print('self.loss_E',self.loss_E)
-        # self.loss_E = torch.tensor(self.loss_E, dtype=float,requires_grad=True)
         self.loss_E.backward()
 
     def backward_D(self):
         self.d = self.netD(self.e.detach())
         self.d=torch.squeeze(self.d)
-        # print('self.d .....  ',self.d.shape)
-        # print('self.u .....  ',self.u.shape)
-        # print('self.is_source ',self.is_source)
         D_src = F.mse_loss(self.d[self.is_source == 1], self.u[self.is_source == 1])
-        # print('D_src ',D_src.dtype)
-        # print('D_src ',D_src)
-        # print('self.d[self.is_source == 0] ',self.d[self.is_source == 0])
-        # print('self.u[self.is_source == 0] ',self.u[self.is_source == 0])
-        # print('self.d[self.is_source == 0] ',self.d[self.is_source == 1])
-        # print('self.u[self.is_source == 0] ',self.u[self.is_source == 1])
         D_tgt = F.mse_loss(self.d[self.is_target == 1], self.u[self.is_target == 1])
         # print('D_tgt ',D_tgt.dtype)
         if len(self.d[self.is_source == 1])==0:
@@ -935,9 +586,6 @@ class CIDA(BaseModel):
             self.loss_D = D_src/2.0
         else:
             self.loss_D = (D_src.float() + D_tgt.float()) / 2.0
-        # print('D_tgt ',D_tgt)
-        # print('self.loss_D ',self.loss_D)
-        # self.loss_D = torch.tensor(self.loss_D, dtype=float,requires_grad=True)
         self.loss_D.backward()
 
     def optimize_parameters(self):
@@ -958,8 +606,6 @@ class CIDA2019(BaseModel):
 
         self.opt = opt
         self.netE = Encoder2019(10,activation='logsoftmax')  # or EncoderCNN
-        # self.init_weight(self.netE)
-        #self.netD = DiscConv(nin=opt.nz, nout=opt.dim_domain)
         self.netD = DiscConv(nin=opt.nz, nout=opt.dim_domain)
         self.optimizer_G = torch.optim.Adam(self.netE.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
         self.optimizer_D = torch.optim.Adam(self.netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
@@ -1032,103 +678,6 @@ class CIDA2019(BaseModel):
         self.optimizer_D.step()
         # update G
         self.set_requires_grad(self.netD, False)
-        self.optimizer_G.zero_grad()
-        self.backward_G()
-        self.optimizer_G.step()
-def neg_guassian_likelihood(d, u):
-    """return: -N(u; mu, var)"""
-    u = torch.reshape(u,(u.shape[0],1))
-    B, dim = u.shape
-    assert (d.shape[1] == dim * 2)
-    mu, logvar = d[:, :dim], d[:, dim:]
-    return 0.5 * (((u - mu) ** 2) / torch.exp(logvar) + logvar).mean()
-
-
-class PCIDA(CIDA):
-    def __init__(self, opt):
-        super(PCIDA, self).__init__(opt)
-        #self.netE = EncoderCNNWithoutIndex(10,activation='logsoftmax')
-        self.netD = DiscConv(nin=opt.nz, nout=opt.dim_domain * 2)  # mean, logvar
-        self.optimizer_D = torch.optim.Adam(self.netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.lr_scheduler_D = lr_scheduler.ExponentialLR(optimizer=self.optimizer_D, gamma=0.5 ** (1 / 50))
-        self.lr_schedulers = [self.lr_scheduler_G, self.lr_scheduler_D]
-        #self.model_path = opt.outf + '/model_gan2_new_data_dict_without_index.pth'
-        self.train_log = opt.outf + '/train_gan2_distance_data_dict_without_index_.log'
-        self.model_path = opt.outf + '/model_gan2_distance_data_dict_without_index_.pth'
-    def backward_G(self):
-        self.d = self.netD(self.e)
-        # print('self.d  ',self.d.shape)
-        # print('self.u ',self.u.shape)
-        E_gan_src = neg_guassian_likelihood(self.d[self.is_source == 1], self.u[self.is_source == 1])
-        E_gan_tgt = neg_guassian_likelihood(self.d[self.is_source == 0], self.u[self.is_source == 0])
-        if len(self.d[self.is_source == 1])==0:
-            self.loss_E_gan = -E_gan_tgt/2.0
-        elif len(self.d[self.is_source == 0])==0:
-            self.loss_E_gan = -E_gan_src/2.0
-        else:
-            self.loss_E_gan = - (E_gan_src + E_gan_tgt) / 2
-
-        self.y_source = self.y[self.is_source == 1]
-        self.f_source = self.f[self.is_source == 1]
-        self.loss_E_pred = F.nll_loss(self.f_source, self.y_source.long())
-
-        self.loss_E = self.loss_E_gan * self.lambda_gan + self.loss_E_pred
-        self.loss_E.backward()
-
-    def backward_D(self):
-        self.d = self.netD(self.e.detach())
-        # print('self.d  ',self.d.shape)
-        # print('self.u ',self.u.shape)
-        D_src = neg_guassian_likelihood(self.d[self.is_source == 1], self.u[self.is_source == 1])
-        D_tgt = neg_guassian_likelihood(self.d[self.is_source == 0], self.u[self.is_source == 0])
-        if len(self.d[self.is_source == 1])==0:
-            self.loss_D = D_tgt/2.0
-        elif len(self.d[self.is_source == 0])==0:
-            self.loss_D = D_src/2.0
-        else:
-            self.loss_D = (D_src + D_tgt) / 2.0
-        self.loss_D.backward()
-    
-    def save(self):
-        torch.save(self.state_dict(), self.model_path)
-
-
-class CIDA_reg_no(BaseModel):
-    def __init__(self, opt):
-        super(CIDA_reg_no, self).__init__(opt)
-
-        self.opt = opt
-        self.netE = EncoderCNNWithoutIndex(10,activation='logsoftmax')  # or EncoderCNN
-        self.optimizer_G = torch.optim.Adam(self.netE.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        #self.optimizer_D = torch.optim.Adam(self.netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.lr_scheduler_G = lr_scheduler.ExponentialLR(optimizer=self.optimizer_G, gamma=0.5 ** (1 / 50))
-        #self.lr_scheduler_D = lr_scheduler.ExponentialLR(optimizer=self.optimizer_D, gamma=0.5 ** (1 / 50))
-        self.lr_schedulers = [self.lr_scheduler_G]
-        self.train_log = opt.outf + '/CIDA_reg_no.log'
-        self.model_path = opt.outf + '/CIDA_reg_no.pth'
-        self.lambda_gan = opt.lambda_gan
-        self.loss_names = ['E_pred']
-
-    def set_input(self, input):
-        self.x, self.y, self.u, self.domain = input
-        self.u = self.u[:,0]/10.0
-        self.domain = self.domain[:,0]/10.0
-        self.is_source = (self.domain*10 <=1).to(torch.float)  # ??? 先强制转为int
-        # print('self.is_source ',self.is_source)
-
-    def forward(self):
-        self.f , self.e = self.netE(self.x, self.u)
-        self.g = torch.argmax(self.f.detach(), dim=1)  # self.g为最后的预测
-
-    def backward_G(self):
-        self.y_source = self.y[self.is_source == 1]
-        self.f_source = self.f[self.is_source == 1]
-        self.loss_E_pred = F.nll_loss(self.f_source, self.y_source.long())
-        self.loss_E =  self.loss_E_pred
-        self.loss_E.backward()
-
-    def optimize_parameters(self):
-        self.forward()
         self.optimizer_G.zero_grad()
         self.backward_G()
         self.optimizer_G.step()

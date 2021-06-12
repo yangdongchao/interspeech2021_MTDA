@@ -159,65 +159,6 @@ class Cnn_9layers_AvgPooling(nn.Module):
         
         return output
 
-class EncoderCNN(nn.Module):
-    def __init__(self, classes_num, activation):
-        super(EncoderCNN, self).__init__()
-
-        self.activation = activation
-
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-
-        self.fc = nn.Linear(512, classes_num, bias=True)
-        self.feature = None
-        self.target = None
-        self.init_weights()
-    def init_weights(self):
-        init_layer(self.fc)
-    def forward(self, x, u):
-
-        """
-        :param x: (batch_size, times_steps, freq_bins)
-        :param u: (batch_size,)
-        :return:
-        """
-        # print('x ',x.shape)
-        # print('u ',u.shape)
-        tmp_y = u
-        # # tmp_x = x
-        # u_new = torch.reshape(u,(u.shape[0],1,1))
-        # # print('u_new ',u_new.shape)
-        # u_new = u_new.repeat((1,x.shape[1],1))
-        # # print('u_new2 ',u_new.shape)
-        # x = torch.cat((x,u_new),dim=-1) # (b,1,t,f+1)
-        # print('x0 ',x.shape)
-        x = x[:,None,:,:]
-        # print('x1 ',x.shape)
-        x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg') 
-        # print('x_conv1 ',x.shape)
-        x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        # print('x_conv2 ',x.shape)
-        x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg') # (batch_size, feature_maps, time_steps, freq_bins+1)
-        # print('x_cov3 ',x.shape)
-        z = self.conv_block4(x, pool_size=(1, 1), pool_type='avg')
-        # print('z ',z.shape)
-        z = torch.mean(z, dim=3)        # (batch_size, feature_maps, time_stpes)
-        # print('z_mean ',z.shape)
-        (z, _) = torch.max(z, dim=2)    # (batch_size, feature_maps)
-        # print('z_max ',z.shape)
-        z = self.fc(z)
-        # print('z_fc ',z.shape)
-        if self.activation == 'logsoftmax':
-            output = F.log_softmax(z, dim=-1)
-            
-        elif self.activation == 'sigmoid':
-            output = torch.sigmoid(z)
-        # print('output ',output.shape)
-        self.feature = x.detach()
-        self.target = tmp_y.detach()
-        return output, x
 class EncoderCNNWithoutIndex(nn.Module):
     def __init__(self, classes_num, activation):
         super(EncoderCNNWithoutIndex, self).__init__()
@@ -243,15 +184,7 @@ class EncoderCNNWithoutIndex(nn.Module):
         :param u: (batch_size,)
         :return:
         """
-        # print('x ',x.shape)
-        # print('u ',u.shape)
         tmp_y = u
-        # u_new = torch.reshape(u,(u.shape[0],1,1))
-        # # print('u_new ',u_new.shape)
-        # u_new = u_new.repeat((1,x.shape[1],1))
-        # print('u_new2 ',u_new.shape)
-        #x = torch.cat((x,u_new),dim=-1) # (b,1,t,f+1)
-        # print('x0 ',x.shape)
         x = x[:,None,:,:]
         # print('x1 ',x.shape)
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg') 
@@ -344,12 +277,6 @@ class BaseModel(nn.Module):
         Y = to_np(self.y)
         G = to_np(self.g)
         T = to_np(self.domain) # self.domain : 所属的域[0,5]
-        # print('Y ',Y)
-        # print('G ',G.shape)
-        # print('T ',T.shape)
-
-        # print('G ',G)
-        # print('T ',T)
         T = (T * self.opt.div).astype(np.int32) #(0,8)
         # T[T >= 8] = 7 #  大于8，强制转7
         hit = (Y == G).astype(np.float32) # 是否预测正确
@@ -405,14 +332,10 @@ class BaseModel(nn.Module):
             for loss in self.loss_names
         }
         self.acc_reset_mnist()
-        # print('dataloader ',len(dataloader))
-        # print('dataloader[0]',dataloader[0])
         bar = ProgressBar()
         
         for data in bar(dataloader):
             x, y, t, is_source = [to_tensor(_, self.opt.device) for _ in data]
-            # print('t ',t)
-            # print('is_source ',is_source)
             self.set_input(input=(x, y, t, is_source))
             self.optimize_parameters()
 
@@ -598,78 +521,6 @@ class LabelClassifier(nn.Module):
         op = self.output_layer(output)
         output = F.log_softmax(op, dim=-1)
         return output
-class ResidualBlock(nn.Module):
-    def __init__(self, inchannel, outchannel, stride=1):
-        super(ResidualBlock, self).__init__()
-        self.left = nn.Sequential(
-            nn.Conv2d(inchannel, outchannel, kernel_size=3, stride=stride, padding=1, bias=False),
-            nn.BatchNorm2d(outchannel),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(outchannel, outchannel, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(outchannel)
-        )
-        self.shortcut = nn.Sequential()
-        if stride != 1 or inchannel != outchannel:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(inchannel, outchannel, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(outchannel)
-            )
-
-    def forward(self, x):
-        out = self.left(x)
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-
-class ResNet(nn.Module):
-    def __init__(self, ResidualBlock, num_classes=10):
-        super(ResNet, self).__init__()
-        self.inchannel = 64
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-        )
-        self.layer1 = self.make_layer(ResidualBlock, 64,  2, stride=1)
-        self.layer2 = self.make_layer(ResidualBlock, 128, 2, stride=2)
-        self.layer3 = self.make_layer(ResidualBlock, 256, 2, stride=2)
-        #self.layer4 = self.make_layer(ResidualBlock, 512, 2, stride=2)
-        self.fc1 = nn.Linear(256,128)
-        self.fc = nn.Linear(128, num_classes)
-
-    def make_layer(self, block, channels, num_blocks, stride):
-        strides = [stride] + [1] * (num_blocks - 1)   #strides=[1,1]
-        layers = []
-        for stride in strides:
-            layers.append(block(self.inchannel, channels, stride))
-            self.inchannel = channels
-        return nn.Sequential(*layers)
-
-    def forward(self, x,u):
-        tmp_y = u
-        x = x[:,None,:,:]
-        out = self.conv1(x)
-        out = self.layer1(out)
-        out = self.layer2(out)
-        z = self.layer3(out)
-        #z = self.layer4(out)
-        E = z
-        z_x = torch.mean(z, dim=3)        # (batch_size, feature_maps, time_stpes)
-        # print('z_mean ',z.shape)
-        (z_x, _) = torch.max(z_x, dim=2)    # (batch_size, feature_maps)
-        #print('z_x ',z_x.shape)
-        out = self.fc1(z_x)
-        out = self.fc(out)
-        output = F.log_softmax(out, dim=-1) # 求log_softmax
-
-        self.feature = E.detach()  # 保存
-        self.target = tmp_y.detach()
-
-        return output, z
-
-
-def ResNet18():
-    return ResNet(ResidualBlock)
 class Discriminator(nn.Module):
     """The discriminator (domain classifier).
     """
@@ -746,35 +597,7 @@ class GAN(BaseModel):
         self.backward_G()
         self.optimizer_G.step()
 
-class GAN_res(BaseModel):  
-    def __init__(self, opt):
-        super(GAN_res, self).__init__(opt)
-        self.opt = opt
-        self.netE = ResNet18()
-        self.netD = DiscConv(nin=opt.nz, nout=opt.dim_domain)
-        self.optimizer_G = torch.optim.Adam(self.netE.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
-        self.lr_scheduler_G = lr_scheduler.ExponentialLR(optimizer=self.optimizer_G, gamma=0.5 ** (1 / 100))
-        self.lr_schedulers = [self.lr_scheduler_G]
-        self.loss_names = ['E_pred']
-        self.lambda_gan = opt.lambda_gan
-        self.train_log = opt.outf + '/'+ '_no_adapt_gan20_res_train.log'
-        self.model_path = opt.outf +'/'+  '_no_adapt_gan20_res_train.pth'
-
-    def forward(self):
-        self.f, self.e = self.netE(self.x, self.u)
-        self.g = torch.argmax(self.f.detach(), dim=1)
-
-    def backward_G(self):
-        self.loss_E_pred = F.nll_loss(self.f[self.is_source == 1], self.y[self.is_source == 1].long())
-        self.loss_E_pred.backward()
-
-
-    def optimize_parameters(self):
-        self.forward()
-        self.optimizer_G.zero_grad()
-        self.backward_G()
-        self.optimizer_G.step()
-class Adaptation(BaseModel):
+class Adaptation(BaseModel): # UADA model
     def __init__(self, opt):
         super(Adaptation, self).__init__(opt)
         self.opt = opt
@@ -825,105 +648,8 @@ class Adaptation(BaseModel):
         self.backward_G()
         self.optimizer_G.step()
 
-class Adaptation_res(BaseModel):
-    def __init__(self, opt):
-        super(Adaptation_res, self).__init__(opt)
-        self.opt = opt
-        self.source_net = opt.netS
-        self.target_net = opt.netE
-        self.train_log = opt.outf + '/'+ '_20domain_adaptation_res_train.log'
-        self.model_path = opt.outf +'/'+  '_20domain_adaptation_res_train.pth'
-        self.optimizer_G = torch.optim.RMSprop(self.target_net.netE.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
-        self.optimizer_D = torch.optim.RMSprop(self.target_net.netD.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
-        self.lr_scheduler_G = lr_scheduler.ExponentialLR(optimizer=self.optimizer_G, gamma=0.5 ** (1 / 100))
-        self.lr_scheduler_D = lr_scheduler.ExponentialLR(optimizer=self.optimizer_D, gamma=0.5 ** (1 / 100))
-        self.lr_schedulers = [self.lr_scheduler_G, self.lr_scheduler_D]
-        self.loss_names = ['D', 'E_gan', 'E_pred']
-        self.lambda_gan = opt.lambda_gan
 
-    def forward(self):
-        self.source_f,self.source_e = self.source_net.netE(self.x,self.u)
-        self.target_f,self.target_e = self.target_net.netE(self.x,self.u)
-        self.g = torch.argmax(self.target_f.detach(), dim=1) # 只计算target的分类输出
-
-    def backward_G(self):
-        self.d = torch.sigmoid(self.target_net.netD(self.target_e)) # target模型的disc Mt(Xt)
-        self.d_t = self.d[self.is_source == 0]# 只用目标域的数据
-        self.loss_E_gan = -torch.log(self.d_t + 1e-10).mean()  # make target domain looks like source
-        self.loss_E_pred = F.nll_loss(self.target_f[self.is_source == 1], self.y[self.is_source == 1].long())  # Mt(Xs)
-        self.loss_E = self.loss_E_gan  + self.loss_E_pred
-        self.loss_E.backward()
-
-    def backward_D(self):
-        self.d = torch.sigmoid(self.target_net.netD(self.target_e.detach()))
-        self.d_s_ = torch.sigmoid(self.target_net.netD(self.source_e.detach())) # 源
-        self.d_s = self.d_s_[self.is_source==1] # 源
-        self.d_t = self.d[self.is_source==0] # 目标
-        self.loss_D = - torch.log(self.d_s + 1e-10).mean() \
-                      - torch.log(1 - self.d_t + 1e-10).mean()
-        self.loss_D.backward()
-
-    def optimize_parameters(self):
-        self.forward()
-        self.set_requires_grad(self.target_net.netD, True)
-        self.optimizer_D.zero_grad()
-        self.backward_D()
-        self.optimizer_D.step()
-        self.set_requires_grad(self.target_net.netD, False)
-        self.optimizer_G.zero_grad()
-        self.backward_G()
-        self.optimizer_G.step()
-
-class Wadaptation_res(BaseModel):
-    def __init__(self, opt):
-        super(Wadaptation_res, self).__init__(opt)
-        self.opt = opt
-        self.source_net = opt.netS
-        self.target_net = opt.netE
-        self.train_log = opt.outf + '/'+ 'W_domain_adaptation_res_train.log'
-        self.model_path = opt.outf +'/'+  'W_domain_adaptation_res_train.pth'
-        self.optimizer_G = torch.optim.RMSprop(self.target_net.netE.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
-        self.optimizer_D = torch.optim.RMSprop(self.target_net.netD.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
-        self.lr_scheduler_G = lr_scheduler.ExponentialLR(optimizer=self.optimizer_G, gamma=0.5 ** (1 / 100))
-        self.lr_scheduler_D = lr_scheduler.ExponentialLR(optimizer=self.optimizer_D, gamma=0.5 ** (1 / 100))
-        self.lr_schedulers = [self.lr_scheduler_G, self.lr_scheduler_D]
-        self.loss_names = ['D', 'E_gan', 'E_pred']
-        self.lambda_gan = opt.lambda_gan
-
-    def forward(self):
-        self.source_f,self.source_e = self.source_net.netE(self.x,self.u)
-        self.target_f,self.target_e = self.target_net.netE(self.x,self.u)
-        self.g = torch.argmax(self.target_f.detach(), dim=1) # 只计算target的分类输出
-
-    def backward_G(self):
-        self.d = torch.sigmoid(self.target_net.netD(self.target_e)) # target模型的disc Mt(Xt)
-        self.d_t = self.d[self.is_source == 0]# 只用目标域的数据
-        self.loss_E_gan = self.d_t.mean()  # make target domain looks like source
-        self.loss_E_pred = F.nll_loss(self.target_f[self.is_source == 1], self.y[self.is_source == 1].long())  # Mt(Xs)
-        self.loss_E = self.loss_E_gan  + self.loss_E_pred
-        self.loss_E.backward()
-
-    def backward_D(self):
-        self.d = torch.sigmoid(self.target_net.netD(self.target_e.detach()))
-        self.d_s_ = torch.sigmoid(self.target_net.netD(self.source_e.detach())) # 源
-        self.d_s = self.d_s_[self.is_source==1]
-        self.d_t = self.d[self.is_source==0]
-        self.loss_D = self.d_s.mean() - self.d_t.mean() # w-gan的公式
-        self.loss_D.backward()
-
-    def optimize_parameters(self):
-        self.forward()
-        self.set_requires_grad(self.target_net.netD, True)
-        self.optimizer_D.zero_grad()
-        self.backward_D()
-        self.optimizer_D.step()
-        self.set_requires_grad(self.target_net.netD, False)
-        self.optimizer_G.zero_grad()
-        self.backward_G()
-        self.optimizer_G.step()
-
-
-class Wadaptation(BaseModel):
+class Wadaptation(BaseModel): # WUADA model
     def __init__(self, opt):
         super(Wadaptation, self).__init__(opt)
         self.opt = opt
