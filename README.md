@@ -26,7 +26,8 @@ Software:
 # Clone the repository
 
 # Download the data: I will release logmel feature eatracted from DCASE2020 task1A dataset soon, and you can also get mel spectrum by yourself according to our code in data folder. The way of get logmel feature, I refer <a name='dcase2019_task1'>https://github.com/qiuqiangkong/dcase2019_task1</a>. 
-
+This is our mel-feature, you can download directly . https://drive.google.com/drive/folders/17nsq2EAsNnEhXmFWxRuOARR79aWB4GJ_?usp=sharing <br/>
+Please place the on the correct path.
 # Train a model for MTDA
 python Main/main.py            # Needs to run on a GPU
 
